@@ -10,9 +10,7 @@ const app = express();
 app.use(cors());
 
 
-// ALTqPXy0MJHgyAjj
 
-// mongodb+srv://officialibn:<password>@cluster0.cfwpwry.mongodb.net/
 
 const uri = process.env.MONGODB_CONNECTION_URI
 
