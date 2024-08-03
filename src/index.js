@@ -18,10 +18,18 @@ const client = new MongoClient(uri);
 
 async function connectToMongo() {
     await client.connect();
-    console.log("Connected to MongoDB");
+    // console.log("Connected to MongoDB");
 }
 
 connectToMongo().catch(console.error);
+
+// async function createIndex() {
+//     console.log('create index start');
+//     await client.db("FMCSA_DB").collection('FMCSA_DB_COMPANIES').createIndex({ legal_name: 'text' })
+//     console.log('create index end');
+// }
+
+// createIndex()
 
 // FUNCTION USED TO INSERT ALL DATA IN THE EXCEL SHEET INTO THE MONGODB COLLECTION
 // async function importExcelToMongoDB() {
@@ -50,20 +58,29 @@ connectToMongo().catch(console.error);
 // importExcelToMongoDB().catch(console.error);
 
 
+
 app.get('/api/companies', async (req, res) => {
-    const { page = 1, pageSize = 40 } = req.query;
+    const { page = 1, pageSize = 40, search = '' } = req.query;
     const skip = (page - 1) * pageSize;
 
     try {
         const database = client.db("FMCSA_DB");
         const collection = database.collection("FMCSA_DB_COMPANIES");
 
-        const data = await collection.find()
+        let query = {}
+
+        if (search) {
+            query = { $text: { $search: search } }
+        }
+
+        const data = await collection.find(query)
             .skip(Number(skip))
             .limit(Number(pageSize))
             .toArray();
 
-        const totalCount = await collection.countDocuments();
+        const totalCount = await collection.countDocuments(query);
+
+        // console.log(JSON.stringify(data, null, 2));
 
         res.json({ data, totalCount });
     } catch (error) {
